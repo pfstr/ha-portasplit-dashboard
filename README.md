@@ -6,7 +6,7 @@ A dark Home Assistant dashboard for the Midea PortaSplit air conditioner, built 
 
 *The screenshot uses simulated values for a hot summer day. The layout, cards and entities match the live dashboard.*
 
-Step-by-step guide (German): [Midea PortaSplit mit Home Assistant lokal steuern und sicher betreiben](https://rafaelpfister.ch/blog/midea-portasplit-home-assistant-einrichten)
+Step-by-step guide (German): [Midea PortaSplit mit Home Assistant lokal steuern und sicher betreiben](https://rafaelpfister.ch/blog/midea-portasplit-home-assistant)
 
 ## Contents
 

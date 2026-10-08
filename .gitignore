@@ -1,0 +1,7 @@
+# Lokale Werkzeuge und Ausgaben
+deploy_dashboard.py
+screenshot.mjs
+sim/
+shot-*.png
+sim-*.png
+__pycache__/

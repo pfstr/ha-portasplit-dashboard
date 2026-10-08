@@ -1,0 +1,419 @@
+# PortaSplit dashboard for Home Assistant (Midea AC LAN)
+# 1. Replace every DEVICE_ID with the numeric device ID of your PortaSplit
+#    (visible in the entity IDs, e.g. climate.123456789012345_climate).
+# 2. Settings > Dashboards > Add dashboard > New dashboard from scratch,
+#    open it, Edit > three dots > Raw configuration editor, paste this file.
+# Requires: apexcharts-card (HACS), packages/portasplit.yaml, themes/portasplit.yaml
+title: PortaSplit
+views:
+- title: PortaSplit
+  path: portasplit
+  icon: mdi:air-conditioner
+  type: sections
+  max_columns: 4
+  dense_section_placement: true
+  theme: PortaSplit Dark
+  header:
+    card:
+      type: markdown
+      text_only: true
+      content: '# PortaSplit'
+  badges: []
+  sections:
+  - type: grid
+    column_span: 4
+    cards:
+    - type: tile
+      entity: sensor.DEVICE_ID_indoor_temperature
+      name: Raumtemperatur
+      icon: mdi:thermometer
+      grid_options:
+        columns: 3
+    - type: tile
+      entity: climate.DEVICE_ID_climate
+      name: Solltemperatur
+      icon: mdi:thermometer-check
+      state_content: temperature
+      color: teal
+      grid_options:
+        columns: 3
+    - type: tile
+      entity: sensor.DEVICE_ID_indoor_coil_temperature
+      name: Verdampfer
+      icon: mdi:snowflake
+      grid_options:
+        columns: 3
+    - type: tile
+      entity: sensor.DEVICE_ID_outdoor_temperature
+      name: Aussentemperatur
+      icon: mdi:home-thermometer-outline
+      grid_options:
+        columns: 3
+    - type: tile
+      entity: sensor.DEVICE_ID_realtime_power
+      name: Leistung
+      icon: mdi:flash
+      grid_options:
+        columns: 3
+    - type: tile
+      entity: sensor.portasplit_energie_heute
+      name: Energie heute
+      icon: mdi:chart-bar
+      grid_options:
+        columns: 3
+    - type: tile
+      entity: sensor.portasplit_laufzeit_heute
+      name: Laufzeit heute
+      icon: mdi:clock-outline
+      grid_options:
+        columns: 3
+    - type: tile
+      entity: binary_sensor.portasplit_kompressor
+      name: Kompressor
+      color: amber
+      grid_options:
+        columns: 3
+  - type: grid
+    column_span: 1
+    cards:
+    - type: heading
+      heading: Steuerung
+    - type: thermostat
+      entity: climate.DEVICE_ID_climate
+      name: ' '
+      features:
+      - type: climate-hvac-modes
+        hvac_modes:
+        - 'off'
+        - cool
+        - heat
+        - dry
+        - fan_only
+        - auto
+      - type: climate-fan-modes
+        style: dropdown
+    - type: custom:apexcharts-card
+      graph_span: 24h
+      header:
+        show: true
+        title: Lüfterstufe (letzte 24 h)
+      apex_config:
+        chart:
+          height: 230
+        legend:
+          show: true
+          position: top
+        grid:
+          borderColor: '#262c36'
+        xaxis:
+          labels:
+            datetimeFormatter:
+              hour: HH:mm
+        tooltip:
+          theme: dark
+          x:
+            format: HH:mm
+      yaxis:
+      - min: 1
+        max: 6
+        apex_config:
+          tickAmount: 5
+          labels:
+            formatter: EVAL:v => ({1:'Leise',2:'Niedrig',3:'Mittel',4:'Hoch',5:'Voll',6:'Auto'})[Math.round(v)] || ''
+      series:
+      - entity: sensor.portasplit_lufterstufe
+        name: Lüfterstufe
+        color: '#2dd4bf'
+        curve: stepline
+        stroke_width: 2
+        extend_to: now
+        show:
+          legend_value: false
+  - type: grid
+    column_span: 3
+    cards:
+    - type: custom:apexcharts-card
+      grid_options:
+        columns: 18
+        rows: 5
+      graph_span: 24h
+      header:
+        show: true
+        title: Raumtemperatur & Solltemperatur (letzte 24 h)
+      apex_config:
+        chart:
+          height: 230
+        legend:
+          show: true
+          position: top
+        grid:
+          borderColor: '#262c36'
+        xaxis:
+          labels:
+            datetimeFormatter:
+              hour: HH:mm
+        tooltip:
+          theme: dark
+          x:
+            format: HH:mm
+        stroke:
+          dashArray:
+          - 0
+          - 6
+      yaxis:
+      - decimals: 0
+        apex_config:
+          title:
+            text: °C
+      series:
+      - entity: sensor.DEVICE_ID_indoor_temperature
+        name: Raumtemperatur
+        color: '#58a6ff'
+        stroke_width: 2
+        group_by:
+          func: avg
+          duration: 10min
+      - entity: climate.DEVICE_ID_climate
+        attribute: temperature
+        name: Solltemperatur
+        color: '#2dd4bf'
+        stroke_width: 2
+        curve: stepline
+        extend_to: now
+    - type: custom:apexcharts-card
+      grid_options:
+        columns: 18
+        rows: 5
+      graph_span: 24h
+      header:
+        show: true
+        title: Leistungsaufnahme (letzte 24 h)
+      apex_config:
+        chart:
+          height: 230
+        legend:
+          show: true
+          position: top
+        grid:
+          borderColor: '#262c36'
+        xaxis:
+          labels:
+            datetimeFormatter:
+              hour: HH:mm
+        tooltip:
+          theme: dark
+          x:
+            format: HH:mm
+      yaxis:
+      - min: 0
+        decimals: 0
+        apex_config:
+          title:
+            text: W
+      series:
+      - entity: sensor.DEVICE_ID_realtime_power
+        name: Leistung
+        type: area
+        color: '#58a6ff'
+        opacity: 0.45
+        stroke_width: 1.5
+        group_by:
+          func: avg
+          duration: 5min
+        show:
+          legend_value: false
+    - type: custom:apexcharts-card
+      grid_options:
+        columns: 12
+        rows: 5
+      graph_span: 1d
+      span:
+        start: day
+      header:
+        show: true
+        title: Energie kumuliert heute
+      apex_config:
+        chart:
+          height: 230
+        legend:
+          show: true
+          position: top
+        grid:
+          borderColor: '#262c36'
+        xaxis:
+          labels:
+            datetimeFormatter:
+              hour: HH:mm
+        tooltip:
+          theme: dark
+          x:
+            format: HH:mm
+      yaxis:
+      - min: 0
+        decimals: 1
+        apex_config:
+          title:
+            text: kWh
+      series:
+      - entity: sensor.portasplit_energie_heute
+        name: Energie
+        type: area
+        color: '#58a6ff'
+        opacity: 0.45
+        stroke_width: 2
+        group_by:
+          func: last
+          duration: 15min
+        show:
+          legend_value: false
+    - type: custom:apexcharts-card
+      grid_options:
+        columns: 12
+        rows: 5
+      graph_span: 24h
+      header:
+        show: true
+        title: Kompressorfrequenz (letzte 24 h)
+      apex_config:
+        chart:
+          height: 230
+        legend:
+          show: true
+          position: top
+        grid:
+          borderColor: '#262c36'
+        xaxis:
+          labels:
+            datetimeFormatter:
+              hour: HH:mm
+        tooltip:
+          theme: dark
+          x:
+            format: HH:mm
+        stroke:
+          dashArray:
+          - 0
+          - 6
+      yaxis:
+      - min: 0
+        decimals: 0
+        apex_config:
+          title:
+            text: Hz
+      series:
+      - entity: sensor.DEVICE_ID_compressor_frequency
+        name: Ist
+        color: '#58a6ff'
+        stroke_width: 2
+        group_by:
+          func: avg
+          duration: 5min
+        show:
+          legend_value: false
+      - entity: sensor.DEVICE_ID_target_compressor_frequency
+        name: Soll
+        color: '#2dd4bf'
+        stroke_width: 1.5
+        curve: stepline
+        group_by:
+          func: avg
+          duration: 5min
+        show:
+          legend_value: false
+    - type: custom:apexcharts-card
+      grid_options:
+        columns: 12
+        rows: 5
+      graph_span: 24h
+      header:
+        show: true
+        title: Kompressor (letzte 24 h)
+      apex_config:
+        chart:
+          height: 230
+        legend:
+          show: true
+          position: top
+        grid:
+          borderColor: '#262c36'
+        xaxis:
+          labels:
+            datetimeFormatter:
+              hour: HH:mm
+        tooltip:
+          theme: dark
+          x:
+            format: HH:mm
+      yaxis:
+      - min: 0
+        max: 1
+        apex_config:
+          tickAmount: 1
+          labels:
+            formatter: 'EVAL:v => v >= 1 ? ''An'' : ''Aus'''
+      series:
+      - entity: binary_sensor.portasplit_kompressor
+        name: Kompressor
+        color: '#e3b341'
+        curve: stepline
+        stroke_width: 2
+        extend_to: now
+        transform: 'return x === ''on'' ? 1 : 0;'
+        show:
+          legend_value: false
+  - type: grid
+    column_span: 3
+    cards:
+    - type: heading
+      heading: Technische Werte
+    - type: entities
+      state_color: true
+      grid_options:
+        columns: 18
+      entities:
+      - entity: sensor.DEVICE_ID_compressor_voltage
+        name: Spannung
+        icon: mdi:flash-triangle-outline
+      - entity: sensor.DEVICE_ID_compressor_current
+        name: Strom
+        icon: mdi:sine-wave
+      - entity: sensor.DEVICE_ID_compressor_power
+        name: Kompressorleistung
+        icon: mdi:flash
+      - entity: sensor.DEVICE_ID_compressor_frequency
+        name: Kompressorfrequenz
+        icon: mdi:waveform
+    - type: entities
+      grid_options:
+        columns: 18
+      entities:
+      - entity: sensor.DEVICE_ID_indoor_coil_temperature
+        name: Verdampfer (T2)
+        icon: mdi:snowflake
+      - entity: sensor.DEVICE_ID_outdoor_coil_temperature
+        name: Kondensator (T3)
+        icon: mdi:water-thermometer-outline
+      - entity: sensor.DEVICE_ID_discharge_pipe_temperature
+        name: Heissgas (TP)
+        icon: mdi:pipe
+      - entity: sensor.DEVICE_ID_indoor_fan_speed
+        name: Lüfterdrehzahl
+        icon: mdi:fan
+  - type: grid
+    column_span: 1
+    cards:
+    - type: heading
+      heading: Status
+    - type: entities
+      entities:
+      - entity: climate.DEVICE_ID_climate
+        name: Betrieb
+        icon: mdi:air-conditioner
+      - entity: sensor.DEVICE_ID_error_code
+        name: Fehlercode
+        icon: mdi:alert-circle-outline
+      - entity: binary_sensor.DEVICE_ID_full_dust
+        name: Filter
+        icon: mdi:air-filter
+      - entity: sensor.portasplit_letzte_meldung
+        name: Letzte Aktualisierung

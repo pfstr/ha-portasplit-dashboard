@@ -1,0 +1,43 @@
+# Package: copy to /config/packages/portasplit.yaml
+# Helper sensors for the PortaSplit dashboard. Replace DEVICE_ID with your device ID.
+
+template:
+  - binary_sensor:
+      - name: "PortaSplit Kompressor"
+        unique_id: portasplit_kompressor
+        icon: mdi:heat-pump-outline
+        device_class: running
+        # Without a compressor frequency sensor: power above 150 W counts as running
+        state: >
+          {% set f = states('sensor.DEVICE_ID_compressor_frequency') %}
+          {% if f | is_number %}{{ f | float > 0 }}
+          {% else %}{{ states('sensor.DEVICE_ID_realtime_power') | float(0) > 150 }}{% endif %}
+  - sensor:
+      - name: "PortaSplit Lüfterstufe"
+        unique_id: portasplit_luefterstufe_num
+        icon: mdi:fan
+        state: >
+          {% set m = state_attr('climate.DEVICE_ID_climate', 'fan_mode') %}
+          {{ {'silent': 1, 'low': 2, 'medium': 3, 'high': 4, 'full': 5, 'auto': 6}.get(m, none) }}
+      - name: "PortaSplit letzte Meldung"
+        unique_id: portasplit_letzte_meldung
+        icon: mdi:sync
+        device_class: timestamp
+        state: "{{ states.climate['DEVICE_ID_climate'].last_reported }}"
+
+sensor:
+  - platform: history_stats
+    name: "PortaSplit Laufzeit heute"
+    unique_id: portasplit_laufzeit_heute
+    entity_id: binary_sensor.portasplit_kompressor
+    state: "on"
+    type: time
+    start: "{{ today_at() }}"
+    end: "{{ now() }}"
+
+utility_meter:
+  portasplit_energie_heute:
+    name: "PortaSplit Energie heute"
+    unique_id: portasplit_energie_heute
+    source: sensor.DEVICE_ID_total_energy_consumption
+    cycle: daily

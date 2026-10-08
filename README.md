@@ -2,9 +2,7 @@
 
 A dark Home Assistant dashboard for the Midea PortaSplit air conditioner, built on the entities of the community integration [Midea AC LAN](https://github.com/wuwentao/midea_ac_lan). It shows temperatures, power, energy, compressor and fan data with 24-hour history charts.
 
-![PortaSplit dashboard (simulated values)](docs/dashboard-simulated.png)
-
-*The screenshot uses simulated values for a hot summer day. The layout, cards and entities match the live dashboard.*
+![PortaSplit dashboard in cooling mode](docs/dashboard.png)
 
 Step-by-step guide (German): [Midea PortaSplit mit Home Assistant lokal steuern und sicher betreiben](https://rafaelpfister.ch/blog/midea-portasplit-home-assistant)
 
